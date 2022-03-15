@@ -1,7 +1,8 @@
 import React, { useReducer, useContext } from 'react';
-import axios from 'axios';
+import uuid from 'uuid';
 import ContactContext from './contactContext';
 import contactReducer from './contactReducer';
+
 import {
   GET_CONTACTS,
   ADD_CONTACT,
@@ -43,9 +44,12 @@ const ContactState = (props) => {
   };
 
   const [state, dispatch] = useReducer(contactReducer, initialState);
-
   return (
-    <ContactContext.Provider value={{ contacts: state.con }}>
+    <ContactContext.Provider
+      value={{
+        contacts: state.contacts,
+      }}
+    >
       {props.children}
     </ContactContext.Provider>
   );
