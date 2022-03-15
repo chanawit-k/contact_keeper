@@ -6,9 +6,8 @@ const app = express();
 // connect DB 
 connectDB()
 
-app.get('/', (req,res) => 
-    res.json({ msg: 'Welcome to contactkeeper API...'})
-);
+// Init Middleware
+app.use(express.json({ extended: false }));
 
 //Define Routes
 app.use('/api/users' , require('./routes/users'));
