@@ -59,7 +59,6 @@ const AuthtState = (props) => {
             });
             loadUser();
         } catch (err) {
-            console.log(err.response);
             dispatch({
                 type: REGISTER_FAIL,
                 payload: err.response.data.msg,
