@@ -2,19 +2,18 @@ import React, { useReducer, useContext } from 'react';
 import { v4 as uuid } from 'uuid';
 import AuthContext from './authContext';
 import authReducer from './authReducer';
-
+import setAuthToken from '../../utils/setAuthToken';
 import {
-    GET_CONTACTS,
-    ADD_CONTACT,
-    DELETE_CONTACT,
-    SET_CURRENT,
-    CLEAR_CURRENT,
-    UPDATE_CONTACT,
-    FILTER_CONTACTS,
-    CLEAR_CONTACTS,
-    CLEAR_FILTER,
-    CONTACT_ERROR,
+    USER_LOADED,
+    AUTH_ERROR,
+    REGISTER_SUCCESS,
+    REGISTER_FAIL,
+    CLEAR_ERRORS,
+    LOGIN_SUCCESS,
+    LOGIN_FAIL,
+    LOGOUT,
 } from '../types';
+import axios from 'axios';
 
 const AuthtState = (props) => {
     const initialState = {
@@ -27,15 +26,82 @@ const AuthtState = (props) => {
 
     const [state, dispatch] = useReducer(authReducer, initialState);
 
-    // load user
+    // load  user
+    const loadUser = async () => {
+        if (localStorage.token) {
+            setAuthToken(localStorage.token);
+        }
+
+        try {
+            const res = await axios.get('/api/auth');
+            dispatch({
+                type: USER_LOADED,
+                payload: res.data,
+            });
+        } catch (err) {
+            dispatch({ type: AUTH_ERROR });
+        }
+    };
 
     // register user
+    const register = async (formData) => {
+        const config = {
+            header: {
+                'Content-Type': 'application/json',
+            },
+        };
+
+        try {
+            const res = await axios.post('/api/users', formData, config);
+            dispatch({
+                type: REGISTER_SUCCESS,
+                payload: res.data,
+            });
+            loadUser();
+        } catch (err) {
+            console.log(err.response);
+            dispatch({
+                type: REGISTER_FAIL,
+                payload: err.response.data.msg,
+            });
+        }
+    };
 
     // login user
+    const login = async (formData) => {
+        const config = {
+            header: {
+                'Content-Type': 'application/json',
+            },
+        };
+
+        try {
+            const res = await axios.post('/api/auth', formData, config);
+            dispatch({
+                type: LOGIN_SUCCESS,
+                payload: res.data,
+            });
+            loadUser();
+        } catch (err) {
+            console.log(err.response);
+            dispatch({
+                type: LOGIN_FAIL,
+                payload: err.response.data.msg,
+            });
+        }
+    };
 
     // logout user
+    const logout = () => {
+        dispatch({
+            type: LOGOUT,
+        });
+    };
 
-    // clear user
+    // clear error
+    const clearErrors = () => {
+        dispatch({ type: CLEAR_ERRORS });
+    };
 
     return (
         <AuthContext.Provider
@@ -45,6 +111,11 @@ const AuthtState = (props) => {
                 loading: state.loading,
                 user: state.user,
                 error: state.error,
+                register,
+                loadUser,
+                login,
+                logout,
+                clearErrors,
             }}
         >
             {props.children}

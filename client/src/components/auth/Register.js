@@ -1,9 +1,14 @@
-import React, { useState, useContext } from 'react';
-import AlertContext from '../../context/alert/alertContext';
+import React, { useState, useContext, useEffect } from 'react';
 
-const Register = () => {
+import AlertContext from '../../context/alert/alertContext';
+import AuthContext from '../../context/auth/authContext';
+
+const Register = (props) => {
     const alertContext = useContext(AlertContext);
+    const authContext = useContext(AuthContext);
+
     const { setAlert } = alertContext;
+    const { register, clearErrors, error, isAuthenticated } = authContext;
 
     const initialContact = {
         name: '',
@@ -11,6 +16,19 @@ const Register = () => {
         password: '',
         password2: '',
     };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            props.history.push('/');
+        }
+
+        if (error === 'User already exists') {
+            setAlert(error, 'danger');
+            clearErrors();
+        }
+
+        // eslint-disable-next-line
+    }, [error, isAuthenticated, props.history]);
 
     const [user, setUser] = useState(initialContact);
 
@@ -29,6 +47,12 @@ const Register = () => {
             setAlert('Please enter all fields', 'danger');
         } else if (password !== password2) {
             setAlert('Passwords do not match', 'danger');
+        } else {
+            register({
+                name,
+                email,
+                password,
+            });
         }
     };
 
@@ -65,7 +89,6 @@ const Register = () => {
                         name='password'
                         value={password}
                         onChange={onChange}
-    
                     />
                 </div>
                 <div className='form-group'>
